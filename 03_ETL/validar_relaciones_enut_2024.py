@@ -17,9 +17,9 @@ OUT=ROOT/"08_DOCUMENTACION/auditorias/ENUT_2024/diagnostico_relaciones_enut_2024
 SPECS={
  "tvivienda":(["llaveviv"],["llaveviv","est_dis","upm_dis","fac_viv"]),
  "thogar":(["llavehog"],["llavehog","llaveviv","est_dis","upm_dis","fac_hog"]),
- "tsdem":(["llavesde"],["llavesde","llaveviv","llavehog","est_dis","upm_dis","fac_hog"]),
- "tmodulo":(["llavemod"],["llavemod","llaveviv","llavehog","est_dis","upm_dis","fac_per"]),
- "tvar_crea":(["llavemod"],["llavemod","llaveviv","llavehog","est_dis","upm_dis","fac_per"]),
+ "tsdem":(["llavehog","llavesde"],["llavesde","llaveviv","llavehog","est_dis","upm_dis","fac_hog"]),
+ "tmodulo":(["llavehog","llavemod"],["llavemod","llaveviv","llavehog","est_dis","upm_dis","fac_per"]),
+ "tvar_crea":(["llavehog","llavemod"],["llavemod","llaveviv","llavehog","est_dis","upm_dis","fac_per"]),
 }
 COUNTS={"tvivienda":28714,"thogar":29181,"tsdem":94565,"tmodulo":74053,"tvar_crea":74053}
 
@@ -51,10 +51,10 @@ def table_info(t,d):
 
 def relation(parent,child,parent_name,child_name,left_key,right_key=None,compare_factor=False):
     right_key=right_key or left_key
-    pdsg=parent[right_key+["est_dis","upm_dis"]+
-                (["fac_per"] if compare_factor else [])].drop_duplicates(right_key)
     if parent.duplicated(right_key).any():
         raise ValueError(f"Clave padre no es unica: {parent_name}, {right_key}")
+    pdsg=parent[right_key+["est_dis","upm_dis"]+
+                (["fac_per"] if compare_factor else [])]
     merged=child.merge(pdsg,left_on=left_key,right_on=right_key,
                        how="left",validate="many_to_one",indicator=True,
                        suffixes=("","_padre"))
@@ -77,18 +77,21 @@ def main():
     for t,d in data.items():
         if len(d)!=COUNTS[t]:raise ValueError(f"Conteo inesperado {t}: {len(d)}")
         s=table_info(t,d)
+        if s["claves_duplicadas"] or s["claves_vacias"]:
+            print(f"ADVERTENCIA: {t} presenta problemas en clave compuesta propuesta {s['llave']}")
         report["tablas"].append(s)
         print(f"{t}: {len(d):,} filas; duplicadas={s['claves_duplicadas']}; factor_invalido={s['factor_invalido']}")
     for parent,child,k,cf in [
       ("tvivienda","thogar",["llaveviv"],False),
       ("thogar","tsdem",["llavehog"],False),
       ("thogar","tmodulo",["llavehog"],False),
-      ("tmodulo","tvar_crea",["llavemod"],True)]:
+      ("tmodulo","tvar_crea",["llavehog","llavemod"],True)]:
         r=relation(data[parent],data[child],parent,child,k,compare_factor=cf)
+        r["clave_usada"]=k
         report["relaciones"].append(r)
         print(f"{r['relacion']}: sin_padre={r['sin_padre']}, discrepancias={r['inconsistencias_en_coincidentes']}")
     report["advertencias"]=[
-      "La cardinalidad de LLAVEMOD/LLAVESDE debe confirmarse con diagramas y diccionarios oficiales.",
+      "Claves compuestas propuestas llavehog+llavesde y llavehog+llavemod; confirmar contra diagramas y diccionarios oficiales.",
       "FAC_HOG en TSDEM no implica factor de expansion de personas; utilizar factor segun unidad oficial.",
       "La auditoria no valida unidades de tiempo, valores especiales ni calculos del diseno de encuesta.",
       "No se infiere discapacidad intelectual ni se publican resultados muestrales."
