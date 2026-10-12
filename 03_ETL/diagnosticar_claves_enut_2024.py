@@ -47,7 +47,7 @@ def main():
     b=data["tvar_crea"]
     for key in [["llavehog","n_ren"],["llaveviv","llavehog","n_ren"],
                 ["control","viv_sel","hogar","n_ren"]]:
-        if not set(key).issubset(a.columns)&set(b.columns): continue
+        if not (set(key).issubset(a.columns) and set(key).issubset(b.columns)): continue
         ak=pd.MultiIndex.from_frame(a[key]);bk=pd.MultiIndex.from_frame(b[key])
         result["intersecciones"]["+".join(key)]={
             "tm_keys_unique":int(ak.nunique()),"tc_keys_unique":int(bk.nunique()),
