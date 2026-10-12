@@ -26,7 +26,7 @@ RELATIONS = [
     ("THOG_UNIP", "TCSDEMPO", "LLAVEMOD", "LLAVESDE"),
     ("TPER_ELE", "TCSDEMPO", "LLAVEMOD", "LLAVESDE"),
 ]
-FACTORS = ("FAC_VIV", "FAC_HOG", "FAC_CUI", "FAC_SEL", "FAC_UNI")
+FACTORS = ("FAC_VIV", "FAC_HOG", "FAC_CUI", "FAC_ELE", "FAC_UNI")
 
 
 def identify(name: str) -> str | None:
