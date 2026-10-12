@@ -1,0 +1,30 @@
+
+# Datos originales
+01_DATOS_RAW/
+
+# Datos procesados
+04_DATOS_LIMPIOS/
+05_BASE_ANALITICA/
+
+# Informacion privada de la asociacion
+10_ASOCIACION_RESTRINGIDO/
+
+# Archivos de datos
+*.csv
+*.zip
+*.parquet
+*.xlsx
+*.db
+*.duckdb
+*.sqlite
+
+# Credenciales y configuraciones privadas
+.env
+.env.*
+*.key
+*.pem
+
+# Entornos y archivos temporales
+.venv/
+__pycache__/
+.ipynb_checkpoints/
