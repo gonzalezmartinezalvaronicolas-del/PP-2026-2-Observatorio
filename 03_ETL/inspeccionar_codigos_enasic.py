@@ -64,6 +64,28 @@ def get_catalog(zf: ZipFile, paths: list[str], table: str, variable: str):
     return matches[0], entries, has_ranges
 
 
+def describe_value(value: str, entries: list[tuple[str, str]]) -> tuple[str, str]:
+    """Compara primero codigos exactos; despues normaliza numeros y rangos."""
+    if not value:
+        return "", "BLANCO"
+    exact = dict(entries)
+    if value in exact:
+        return exact[value], "SI_EXACTO"
+    if value.isdecimal():
+        number = int(value)
+        for code, description in entries:
+            if code.isdecimal() and int(code) == number:
+                return description, "SI_NORMALIZADO"
+        for code, description in entries:
+            normalized = code.replace("…", "...").replace("–", "...").replace("-", "...")
+            parts = normalized.split("...")
+            if len(parts) == 2 and all(part.strip().isdecimal() for part in parts):
+                low, high = map(int, parts)
+                if low <= number <= high:
+                    return description, "SI_RANGO"
+    return "", "REVISAR_CODIGO"
+
+
 def main() -> None:
     if not RAW.is_file():
         raise SystemExit(f"No se encuentra el ZIP original: {RAW}")
@@ -94,14 +116,14 @@ def main() -> None:
                 observed = counters[variable]
                 blank = observed.get("", 0)
                 outside = sum(count for value, count in observed.items()
-                              if value and value not in explicit_codes)
+                              if describe_value(value, entries)[1] == "REVISAR_CODIGO")
                 profiles.append({
                     "tabla": table, "variable": variable, "registros_tabla": total,
                     "blancos": blank, "porcentaje_blancos": round(100 * blank / total, 2) if total else 0,
                     "valores_distintos_no_vacios": len([v for v in observed if v]),
                     "archivo_catalogo": catalog_path or "NO_ENCONTRADO",
                     "catalogo_con_rangos": "SI" if has_ranges else "NO",
-                    "valores_no_listados_explicitamente": outside,
+                    "valores_sin_cobertura_catalogo": outside,
                     "interpretacion": "PENDIENTE_VALIDACION_DE_FILTROS_Y_CODIGOS",
                     "nota": ("NO considerar los valores fuera de lista como invalidos si el "
                              "catalogo contiene rangos; los blancos pueden ser saltos."),
@@ -116,10 +138,8 @@ def main() -> None:
                         "tabla": table, "variable": variable, "valor_observado": value,
                         "frecuencia_no_ponderada": count,
                         "porcentaje_sobre_toda_tabla": round(100 * count / total, 4) if total else 0,
-                        "descripcion_catalogo_explicita": descriptions.get(value, ""),
-                        "coincidencia_explicita": ("BLANCO" if not value else
-                                                 "SI" if value in explicit_codes else
-                                                 "REVISAR_RANGO_O_CODIGO"),
+                        "descripcion_catalogo": describe_value(value, entries)[0],
+                        "estado_codigo": describe_value(value, entries)[1],
                     })
             print(f"{table}: {total:,} registros, {len(variables)} variables inspeccionadas")
 
