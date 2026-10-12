@@ -32,11 +32,28 @@ BATCH_SIZE = 10000
 
 
 def source_member(names: list[str], table: str) -> str:
-    target = f"conjunto_de_datos_{table.lower()}_enasic_2022.csv"
-    matches = [name for name in names if "/conjunto_de_datos/" in name.lower()
-               and name.lower().endswith("/" + target)]
+    """Localiza un unico CSV principal por tabla, tolerando erratas del nombre ZIP.
+
+    La auditoria inicial de ENASIC detecto variaciones de nomenclatura
+    (p. ej., THOGAR con 'ensasic'). Exigimos la carpeta /conjunto_de_datos/
+    y el prefijo de tabla, pero no un sufijo escrito exactamente.
+    """
+    prefix = f"conjunto_de_datos_{table.lower()}_"
+    matches = [
+        name for name in names
+        if "/conjunto_de_datos/" in name.lower()
+        and name.lower().endswith(".csv")
+        and Path(name).name.lower().startswith(prefix)
+    ]
     if len(matches) != 1:
-        raise ValueError(f"{table}: esperado 1 CSV principal; encontrados {len(matches)}: {matches}")
+        candidates = [
+            name for name in names
+            if "/conjunto_de_datos/" in name.lower() and name.lower().endswith(".csv")
+        ]
+        raise ValueError(
+            f"{table}: se esperaba un unico CSV principal; hallados {len(matches)}. "
+            f"CSV principales disponibles: {candidates}"
+        )
     return matches[0]
 
 
