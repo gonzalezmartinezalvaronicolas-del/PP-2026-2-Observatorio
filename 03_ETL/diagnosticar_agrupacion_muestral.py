@@ -49,8 +49,16 @@ def main():
     df = pd.read_parquet(INPUT, columns=FIELDS)
     if len(df) != 5677:
         raise ValueError(f"Se esperaban 5677 registros, encontrados {len(df)}")
-    if df[FIELDS].isna().any().any() or df[FIELDS].eq("").any().any():
-        raise ValueError("Hay campos vacios o nulos; revisar origen.")
+    # P6_1 es una pregunta filtrada: sus 5,041 blancos son esperados.
+    # Solo los tres campos de diseno deben ser completos.
+    design_fields = ["UPM_DIS", "EST_DIS", "FAC_CUI"]
+    for field in design_fields:
+        vals = df[field].astype("string").str.strip()
+        missing = int(vals.isna().sum() + vals.eq("").fillna(False).sum())
+        if missing:
+            raise ValueError(f"{field} contiene {missing} vacios o nulos; revisar origen.")
+    p6_1_blank = int(df["P6_1"].isna().sum() + df["P6_1"].eq("").sum())
+    print(f"P6_1: {p6_1_blank:,} blancos esperados por filtro; no se considera campo de diseno.")
     factor = pd.to_numeric(df["FAC_CUI"], errors="coerce")
     if factor.isna().any() or not factor.map(math.isfinite).all() or factor.le(0).any():
         raise ValueError("FAC_CUI contiene pesos no validos, no finitos o no positivos")
