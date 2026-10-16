@@ -247,8 +247,8 @@ function render(){
  document.getElementById("summary").innerHTML=
  '<div class="box"><div class="label">Mujeres</div><div class="value women">'+fmt(a.estimacion,2)+unit()+'</div><div class="label">IC95%: '+fmt(a.lim_inf_95,2)+' a '+fmt(a.lim_sup_95,2)+unit()+'</div></div>'+
  '<div class="box"><div class="label">Hombres</div><div class="value men">'+fmt(b.estimacion,2)+unit()+'</div><div class="label">IC95%: '+fmt(b.lim_inf_95,2)+' a '+fmt(b.lim_sup_95,2)+unit()+'</div></div>'+
- '<div class="box"><div class="label">Diferencia puntual (mujeres − hombres)</div><div class="value">'+(diff>=0?"+":"")+fmt(diff,2)+(isPct?" pp":" unidades")+'</div><div class="label">No representa prueba de significancia</div></div>';
- const max=isPct?100:Math.max(30,Math.ceil(Math.max(...rows.map(function(r){return r.lim_sup_95;}))*1.3));
+ '<div class="box"><div class="label">Diferencia puntual (mujeres − hombres)</div><div class="value">'+(diff>=0?"+":"")+fmt(diff,2)+(isPct?" pp":" h")+'</div><div class="label">No representa prueba de significancia</div></div>';
+ const max=Math.max(isPct?5:15,Math.ceil(Math.max(...rows.map(function(r){return r.lim_sup_95;}))*1.3));
  document.getElementById("chart").innerHTML=rows.map(function(r){
   const color=colors[r.grupo];
   const width=Math.max(0,Math.min(100,r.estimacion/max*100));
@@ -261,7 +261,7 @@ function render(){
    '<p class="bar-detail">IC95% '+fmt(r.lim_inf_95,2)+'–'+fmt(r.lim_sup_95,2)+unit()+' · SE '+fmt(r.error_estandar,3)+' · CV '+fmt(r.cv*100,2)+'%</p></div>';
  }).join("");
  document.getElementById("chartNote").textContent=isPct?
-  "Porcentaje ponderado sobre todas las personas del grupo en TVAR_CREA; error y estimación bajo el diseño aplicado.":
+  "Porcentaje ponderado sobre todas las personas del grupo en TVAR_CREA; error y estimación bajo el diseño aplicado. El gráfico utiliza una escala ajustada al rango del indicador; los porcentajes no se muestran necesariamente sobre una escala hasta 100%.":
   "Promedio ponderado exclusivamente entre quienes registran actividad positiva; interpretación temporal contrastada con INEGI para cuidados especiales.";
  const note=v==="cuid_esp_disc_enf"?
   "Atención: esta variable mide ayuda gratuita a personas de OTROS hogares familiares por enfermedad o discapacidad; no representa cuidados al interior del propio hogar.":
