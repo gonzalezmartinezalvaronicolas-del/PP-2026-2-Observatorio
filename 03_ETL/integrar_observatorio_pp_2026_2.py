@@ -192,8 +192,8 @@ v.addEventListener("change",render);m.addEventListener("change",render);render()
 def portal_page() -> str:
     modules = [
         ("ENASIC 2022","Personas cuidadoras y carga de cuidados",
-         "Prototipo previo; resultados y límites metodológicos por revisar.",
-         "prototipo_enasic_2022.html","Prototipo local existente"),
+         "Ocho indicadores muestrales sin ponderar; diseño auditado y siete estimadores experimentales comprobados entre R/Python, no publicables aún.",
+         "enasic_2022_cuidados.html","Exploratorio · validación numérica parcial"),
         ("ENIGH 2024","Sostenibilidad económica de los hogares",
          "Comparaciones económicas de la muestra, sin ponderar; sin inferencia poblacional.",
          "enigh_2024_economia.html","Exploratorio"),
