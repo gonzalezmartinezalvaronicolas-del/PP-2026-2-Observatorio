@@ -55,7 +55,7 @@ def read_rows():
             raise ValueError(f"Conteos/porcentaje inconsistentes: {key}")
         data.append({
             "id": key, "etiqueta": label, "grupo": group,
-            "n": n, "casos": yes, "porcentaje": round(100 * yes / n, 3),
+            "n": n, "casos": yes, "porcentaje": 100 * yes / n,
             "definicion": r["definicion"]
         })
     return data
